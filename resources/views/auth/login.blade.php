@@ -122,7 +122,7 @@
                 </svg>
             </div>
             <h1 class="text-3xl font-black tracking-tight text-purple-950 font-outfit bg-gradient-to-r from-purple-800 to-pink-600 bg-clip-text text-transparent">Photobox Studio</h1>
-            <p class="text-sm text-purple-400/80 mt-1 font-medium">Capture sweet & happy memories! ✨</p>
+            <p class="text-sm text-purple-400/80 mt-1 font-medium">Capture sweet & happy memories!</p>
         </div>
 
         <!-- Session Status & Errors -->
@@ -165,7 +165,7 @@
             </div>
 
             <button type="submit" class="w-full py-3.5 rounded-2xl text-sm font-extrabold shadow-lg glow-button mt-2">
-                Sign In 💖
+                Sign In
             </button>
         </form>
 
@@ -196,8 +196,17 @@
                        class="w-full px-4 py-3 rounded-2xl form-input text-sm" placeholder="••••••••">
             </div>
 
+            <div>
+                <label for="reg_role" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Role / Level</label>
+                <select id="reg_role" name="role" required class="w-full px-4 py-3 rounded-2xl form-input text-sm">
+                    <option value="user" {{ old('role') === 'user' ? 'selected' : '' }}>Ordinary User</option>
+                    <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Admin</option>
+                    <option value="superadmin" {{ old('role') === 'superadmin' ? 'selected' : '' }}>Superadmin</option>
+                </select>
+            </div>
+
             <button type="submit" class="w-full py-3.5 rounded-2xl text-sm font-extrabold shadow-lg glow-button mt-2">
-                Create Account 🧁
+                Create Account
             </button>
         </form>
     </div>

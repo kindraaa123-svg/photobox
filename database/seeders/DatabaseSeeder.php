@@ -17,12 +17,33 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Default Test User
-        $user = User::firstOrCreate(
+        // Seed Superadmin
+        $superadmin = User::updateOrCreate(
+            ['email' => 'superadmin@photobox.com'],
+            [
+                'name' => 'Photobox Superadmin',
+                'password' => bcrypt('password123'),
+                'role' => 'superadmin',
+            ]
+        );
+
+        // Seed Admin
+        $admin = User::updateOrCreate(
             ['email' => 'admin@photobox.com'],
             [
                 'name' => 'Photobox Admin',
                 'password' => bcrypt('password123'),
+                'role' => 'admin',
+            ]
+        );
+
+        // Seed Regular User
+        $user = User::updateOrCreate(
+            ['email' => 'user@photobox.com'],
+            [
+                'name' => 'Photobox User',
+                'password' => bcrypt('password123'),
+                'role' => 'user',
             ]
         );
 
@@ -90,5 +111,9 @@ class DatabaseSeeder extends Seeder
                 ['x' => 40, 'y' => 700, 'width' => 320, 'height' => 250],
             ]
         ]);
+
+        // 5. Default Settings
+        \App\Models\Setting::updateOrCreate(['key' => 'web_name'], ['value' => 'Photobox Studio']);
+        \App\Models\Setting::updateOrCreate(['key' => 'web_logo'], ['value' => null]);
     }
 }

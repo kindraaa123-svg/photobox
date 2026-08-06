@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -16,7 +17,7 @@ class AuthController extends Controller
     public function showAuthForm()
     {
         if (Auth::check()) {
-            return redirect()->route('workspace');
+            return redirect()->route('dashboard');
         }
         return view('auth.login');
     }
@@ -33,7 +34,8 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended(route('workspace'));
+            ActivityLog::log('User Login', 'Logged into the system');
+            return redirect()->route('dashboard');
         }
 
         return back()->withErrors([
@@ -50,19 +52,22 @@ class AuthController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'role' => ['nullable', 'string', 'in:superadmin,admin,user'],
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => $request->role ?? 'user',
         ]);
 
         Auth::login($user);
 
         $request->session()->regenerate();
+        ActivityLog::log('User Register', 'Registered a new user account: ' . $user->email);
 
-        return redirect()->route('workspace');
+        return redirect()->route('dashboard');
     }
 
     /**
@@ -70,6 +75,10 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
+        if (Auth::check()) {
+            ActivityLog::log('User Logout', 'Logged out of the system');
+        }
+        
         Auth::logout();
 
         $request->session()->invalidate();

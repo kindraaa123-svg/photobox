@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Photobox Studio - Workspace</title>
+    <title>{{ \App\Models\Setting::getVal('web_name', 'Photobox Studio') }} - Workspace</title>
     
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -116,21 +116,27 @@
     <header id="appHeader" class="border-b border-purple-100 bg-white/40 backdrop-blur-md sticky top-0 z-30 @if(request('action') === 'capture') hidden @endif">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-300 to-purple-300 flex items-center justify-center shadow-md">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-white">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
-                    </svg>
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-300 to-purple-300 flex items-center justify-center shadow-md overflow-hidden">
+                    @if(\App\Models\Setting::getVal('web_logo'))
+                        <img src="{{ asset(\App\Models\Setting::getVal('web_logo')) }}" alt="Logo" class="w-7 h-7 object-contain rounded-md">
+                    @else
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-white">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+                        </svg>
+                    @endif
                 </div>
-                <span class="text-xl font-black font-outfit text-purple-950">Photobox Studio</span>
+                <span class="text-xl font-black font-outfit text-purple-950">{{ \App\Models\Setting::getVal('web_name', 'Photobox Studio') }}</span>
             </div>
             
             <div class="flex items-center space-x-6">
                 @auth
-                    <div class="hidden sm:flex flex-col text-right">
+                    <div class="hidden sm:flex flex-col text-right items-end justify-center">
                         <span class="text-sm font-bold text-purple-950">{{ Auth::user()->name }}</span>
-                        <span class="text-xs text-purple-500/80 font-semibold">Premium Account</span>
                     </div>
+                    <a href="{{ route('dashboard') }}" class="px-4 py-2 text-xs font-bold rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-100 transition-all">
+                        Dashboard
+                    </a>
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
                         <button type="submit" class="px-4 py-2 text-xs font-bold rounded-xl border border-purple-100 text-purple-700 hover:bg-purple-50/50 transition-all">
@@ -150,70 +156,96 @@
     <main id="appMain" class="flex-1 max-w-7xl w-full mx-auto px-4 md:px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-hidden @if(request('action') === 'capture') hidden @endif">
         
         <!-- Left Sidebar: Controls & Options -->
-        <section id="leftSidebar" class="lg:col-span-3 flex flex-col space-y-6 overflow-y-auto max-h-[calc(100vh-7rem)] pr-2">
+        <section id="leftSidebar" class="{{ request('action') === 'custom' ? 'lg:col-span-3' : 'lg:col-span-4' }} flex flex-col space-y-6 overflow-y-auto max-h-[calc(100vh-7rem)] pr-2">
             
-            <!-- Choose Frame -->
-            <div class="glass-panel rounded-2xl p-5 space-y-4">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-xs font-bold uppercase tracking-wider text-purple-700">1. Select Frame</h2>
-                    <button onclick="openCustomFrameModal()" class="text-xs font-semibold text-pink-500 hover:text-pink-600 transition-colors flex items-center space-x-1">
-                        <span>+ Custom</span>
-                    </button>
-                </div>
-                <div class="grid grid-cols-2 gap-2" id="frameContainer">
-                    @foreach($frames as $frame)
-                        <button onclick="selectFrame({{ $frame->id }}, '{{ $frame->layout_type }}', '{{ $frame->bg_color }}', '{{ $frame->overlay_image }}', {{ json_encode($frame->slots) }})"
-                                class="frame-select-btn p-3 rounded-xl border text-left flex flex-col justify-between transition-all glass-panel glass-panel-hover border-purple-100/50"
-                                data-frame-id="{{ $frame->id }}">
-                            <div>
-                                <div class="text-xs font-bold truncate text-purple-950">{{ $frame->name }}</div>
-                                <div class="text-[10px] text-purple-500/70 uppercase mt-0.5 font-semibold">{{ $frame->layout_type }}</div>
-                            </div>
-                            <div class="flex justify-between items-center mt-3">
-                                <span class="w-3 h-3 rounded-full border border-purple-100" style="background-color: {{ $frame->bg_color }};"></span>
-                                @if(!$frame->is_public)
-                                    <button onclick="event.stopPropagation(); deleteFrame({{ $frame->id }})" class="text-[10px] text-red-500 hover:text-red-600 font-semibold">
-                                        Delete
-                                    </button>
-                                @endif
-                            </div>
-                        </button>
-                    @endforeach
-                </div>
-            </div>
-
-            <!-- Frame Customize Color / Overlay -->
-            <div class="glass-panel rounded-2xl p-5 space-y-4">
-                <h2 class="text-xs font-bold uppercase tracking-wider text-purple-700">2. Frame Styling</h2>
-                
-                <!-- Background Color Selection -->
-                <div class="space-y-2">
-                    <label class="block text-xs font-semibold text-purple-600">Background Color</label>
-                    <div class="flex items-center space-x-3">
-                        <input type="color" id="frameBgColorPicker" oninput="updateFrameBgColor(this.value)" class="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0">
-                        <input type="text" id="frameBgColorHex" onchange="updateFrameBgColor(this.value)" class="flex-1 bg-white border border-purple-100 rounded-xl px-3 py-1.5 text-xs text-purple-950 uppercase focus:outline-none focus:border-purple-300" placeholder="#FFFFFF">
+            @if(request('action') === 'custom')
+                <!-- Custom Canvas / Frame Creator Panel -->
+                <form id="customFrameForm" onsubmit="submitCustomFrame(event)" class="space-y-4">
+                    @csrf
+                    
+                    <!-- Card 1: Frame Name -->
+                    <div class="glass-panel rounded-2xl p-5 space-y-3">
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-purple-700">1. Frame Name</h2>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Template Name</label>
+                            <input type="text" name="name" required class="w-full bg-white border-2 border-purple-100 rounded-xl px-3 py-2 text-xs text-purple-950 focus:outline-none focus:border-pink-300 shadow-sm" placeholder="My Birthday Frame">
+                        </div>
                     </div>
-                </div>
-            </div>
 
+                    <!-- Card 2: Frame Layout -->
+                    <div class="glass-panel rounded-2xl p-5 space-y-3">
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-purple-700">2. Frame Layout</h2>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Layout Template</label>
+                            <select name="layout_type" onchange="previewCustomLayout(this.value)" class="w-full bg-white border-2 border-purple-100 rounded-xl px-3 py-2 text-xs text-purple-950 focus:outline-none focus:border-pink-300 shadow-sm">
+                                <option value="strip">Vertical Strip (4 slots)</option>
+                                <option value="strip_3">3-Photo Strip (3 slots)</option>
+                                <option value="grid">2x2 Grid (4 slots)</option>
+                                <option value="grid_6">3x2 Grid (6 slots)</option>
+                                <option value="single">Solo Landscape (1 slot)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Frame Styling -->
+                    <div class="glass-panel rounded-2xl p-5 space-y-3">
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-purple-700">3. Frame Styling</h2>
+                        
+                        <!-- Background Color -->
+                        <div class="space-y-2">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Background Color</label>
+                            <div class="flex items-center space-x-2">
+                                <input type="color" name="bg_color" value="#ffffff" onchange="previewCustomBg(this.value)" class="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0">
+                                <input type="text" id="customBgColorHex" onchange="previewCustomBg(this.value)" class="flex-1 bg-white border-2 border-purple-100 rounded-xl px-3 py-1.5 text-xs text-purple-950 uppercase focus:outline-none focus:border-purple-300" placeholder="#FFFFFF" value="#FFFFFF">
+                            </div>
+                        </div>
+
+                        <!-- Slot Shape -->
+                        <div class="space-y-2 pt-2 border-t border-purple-100">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Slot Shape</label>
+                            <select name="slot_shape" id="slotShapeSelector" onchange="updateSlotShape(this.value)" class="w-full bg-white border-2 border-purple-100 rounded-xl px-3 py-2 text-xs text-purple-950 focus:outline-none focus:border-pink-300 shadow-sm">
+                                <option value="rect">Rectangle / Kotak</option>
+                                <option value="circle">Circle / Bulat</option>
+                                <option value="heart">Heart / Hati</option>
+                                <option value="star">Star / Bintang</option>
+                            </select>
+                        </div>
+
+                        <!-- Overlay PNG (Optional) -->
+                        <div class="space-y-2 pt-2 border-t border-purple-100">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Overlay PNG (Optional)</label>
+                            <input type="file" name="overlay_image" accept="image/png,image/svg+xml" onchange="previewCustomOverlay(this)" class="w-full text-[10px] text-purple-600 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200 cursor-pointer">
+                        </div>
+
+                        <!-- Hidden slots JSON input -->
+                        <input type="hidden" name="slots" id="slotsJsonInput">
+
+                        <button type="submit" class="w-full py-3 bg-gradient-to-tr from-pink-400 to-purple-400 text-white font-black text-xs rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all mt-3">
+                            Save Layout / Template
+                        </button>
+                    </div>
+                </form>
+            @else
             <!-- Capture / Upload Options -->
             <div class="glass-panel rounded-2xl p-5 space-y-4">
-                <h2 class="text-xs font-bold uppercase tracking-wider text-purple-700">3. Fill Photo Slots</h2>
+                <h2 class="text-xs font-bold uppercase tracking-wider text-purple-700">1. Fill Photo Slots</h2>
                 
                 <div class="grid grid-cols-2 gap-2 text-xs">
-                    <button onclick="startAutoCapture()" class="col-span-2 py-3 rounded-xl font-bold text-center text-white bg-pink-400 hover:bg-pink-500 shadow-md flex items-center justify-center space-x-2 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
-                        </svg>
-                        <span>Start Auto-Capture</span>
-                    </button>
+                    @if(request('action') !== 'upload')
+                        <button onclick="startAutoCapture()" class="col-span-2 py-3 rounded-xl font-bold text-center text-white bg-pink-400 hover:bg-pink-500 shadow-md flex items-center justify-center space-x-2 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+                            </svg>
+                            <span>Start Auto-Capture</span>
+                        </button>
 
-                    <button onclick="openWebcam()" class="py-2.5 rounded-xl border border-purple-100 bg-white hover:bg-purple-50/50 font-bold text-center text-purple-700 transition-colors">
-                        Camera Feed
-                    </button>
+                        <button onclick="openWebcam()" class="py-2.5 rounded-xl border border-purple-100 bg-white hover:bg-purple-50/50 font-bold text-center text-purple-700 transition-colors">
+                            Camera Feed
+                        </button>
+                    @endif
                     
-                    <label class="py-2.5 rounded-xl border border-purple-100 bg-white hover:bg-purple-50/50 font-bold text-center text-purple-700 cursor-pointer block text-center transition-colors">
+                    <label class="{{ request('action') === 'upload' ? 'col-span-2' : '' }} py-2.5 rounded-xl border border-purple-100 bg-white hover:bg-purple-50/50 font-bold text-center text-purple-700 cursor-pointer block text-center transition-colors">
                         Upload Files
                         <input type="file" id="bulkFileInput" multiple accept="image/*" class="hidden" onchange="uploadBulkImages(event)">
                     </label>
@@ -229,7 +261,7 @@
 
             <!-- Filters Panel -->
             <div class="glass-panel rounded-2xl p-5 space-y-4">
-                <h2 class="text-xs font-bold uppercase tracking-wider text-purple-700">4. Effects Filter</h2>
+                <h2 class="text-xs font-bold uppercase tracking-wider text-purple-700">2. Effects Filter</h2>
                 <div class="grid grid-cols-3 gap-1.5 text-center text-[10px]">
                     <button onclick="applyImageFilter('normal')" class="filter-btn p-2 rounded-lg border border-purple-100/50 glass-panel glass-panel-hover text-purple-950 active-filter font-semibold">Normal</button>
                     <button onclick="applyImageFilter('grayscale')" class="filter-btn p-2 rounded-lg border border-purple-100/50 glass-panel glass-panel-hover text-purple-900 font-semibold">Mono</button>
@@ -239,11 +271,12 @@
                     <button onclick="applyImageFilter('vintage')" class="filter-btn p-2 rounded-lg border border-purple-100/50 glass-panel glass-panel-hover text-amber-900 font-semibold">Vintage</button>
                 </div>
             </div>
+            @endif
 
         </section>
 
         <!-- Center Main Workspace: Live Canvas Sandbox -->
-        <section id="centerSandbox" class="lg:col-span-6 flex flex-col justify-between items-center max-h-[calc(100vh-7rem)] relative">
+        <section id="centerSandbox" class="{{ request('action') === 'custom' ? 'lg:col-span-6' : 'lg:col-span-8' }} flex flex-col justify-between items-center max-h-[calc(100vh-7rem)] relative">
             
             <!-- Canvas container -->
             <div class="flex-1 flex items-center justify-center w-full min-h-[250px] md:min-h-[420px]">
@@ -330,48 +363,152 @@
 
         </section>
 
-        <!-- Right Sidebar: Creation History / Gallery -->
+        @if(request('action') === 'custom')
+        <!-- Right Sidebar: Graphics Elements Library (For Custom Creator Mode Only) -->
         <section id="rightSidebar" class="lg:col-span-3 flex flex-col space-y-6 overflow-y-auto max-h-[calc(100vh-7rem)] pl-2">
             
-            <div class="glass-panel rounded-2xl p-5 space-y-4">
-                <h2 class="text-xs font-bold uppercase tracking-wider text-purple-700 flex items-center justify-between">
-                    <span>Recent Creations</span>
-                    <span class="px-2 py-0.5 rounded-full bg-pink-100 border border-pink-200 text-[10px] text-pink-700 font-extrabold" id="creationsCount">
-                        {{ count($creations) }}
-                    </span>
-                </h2>
+            <div class="glass-panel rounded-2xl p-5 space-y-4 bg-white/85">
+                <div class="space-y-1">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-purple-700">Graphics Elements</h2>
+                    <p class="text-[10px] text-purple-400 font-medium">Click to add graphics on your canvas. Drag to move them around.</p>
+                </div>
                 
-                <div class="grid grid-cols-2 gap-2 overflow-y-auto max-h-[500px] pr-1" id="creationsGrid">
-                    @forelse($creations as $creation)
-                        <div class="relative group aspect-square rounded-xl overflow-hidden glass-panel border border-purple-100" id="creation-card-{{ $creation->id }}">
-                            <img src="{{ asset($creation->image_path) }}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" alt="Creation">
-                            
-                            <!-- Action overlays (White/Pastel glass overlay) -->
-                            <div class="absolute inset-0 bg-white/90 opacity-0 group-hover:opacity-100 flex flex-col justify-end p-2 transition-opacity space-y-1">
-                                <button onclick="previewCreation('{{ asset($creation->image_path) }}')" class="w-full py-1 bg-purple-50 hover:bg-purple-100 text-center text-[10px] font-bold text-purple-700 border border-purple-100 rounded-lg transition-colors">
-                                    Zoom Preview
-                                </button>
-                                <div class="flex space-x-1">
-                                    <a href="{{ asset($creation->image_path) }}" download="photobox-{{ $creation->id }}.png" class="flex-1 py-1 bg-pink-300 hover:bg-pink-400 text-center text-[10px] font-bold text-white rounded-lg transition-colors shadow-sm">
-                                        Save File
-                                    </a>
-                                    <button onclick="deleteCreation({{ $creation->id }})" class="px-2 py-1 bg-red-50 hover:bg-red-100 border border-red-200 text-red-500 rounded-lg transition-colors">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
+                <div class="grid grid-cols-2 gap-3" id="elementsGrid">
+                    <!-- Fish Element -->
+                    <button type="button" onclick="addGraphicElement('fish')" class="p-3 rounded-xl border border-purple-100 bg-white hover:bg-purple-50 hover:border-pink-300 transition-all flex flex-col items-center text-center space-y-2 group shadow-sm">
+                        <div class="w-12 h-12 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-10 h-10">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 11v1c0 1.66 1.34 3 3 3v2.93zm5.9-3.41c-.13-.3-.39-.52-.71-.62L16 13.5v-1c0-1.66-1.34-3-3-3H9.5L7.5 7.5h6.21c.56 0 1.08.34 1.3.85l1.64 3.73c.18.42.54.73.98.83l.89.2c-.37 1.06-.99 2.01-1.78 2.76l-.84-.33z"/>
+                            </svg>
                         </div>
-                    @empty
-                        <div class="col-span-2 py-12 text-center text-xs text-purple-400/80" id="noCreationsPlaceholder">
-                            No creations yet.<br>Take some photos!
+                        <span class="text-[10px] font-bold text-slate-600">Fish Graphic</span>
+                    </button>
+
+                    <!-- Wave Element -->
+                    <button type="button" onclick="addGraphicElement('wave')" class="p-3 rounded-xl border border-purple-100 bg-white hover:bg-purple-50 hover:border-pink-300 transition-all flex flex-col items-center text-center space-y-2 group shadow-sm">
+                        <div class="w-12 h-12 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" class="w-10 h-10">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 12c3-4 6 4 9 0s6-4 9 0" />
+                            </svg>
                         </div>
-                    @endforelse
+                        <span class="text-[10px] font-bold text-slate-600">Wave Graphic</span>
+                    </button>
+
+                    <!-- Heart Element -->
+                    <button type="button" onclick="addGraphicElement('heart')" class="p-3 rounded-xl border border-purple-100 bg-white hover:bg-purple-50 hover:border-pink-300 transition-all flex flex-col items-center text-center space-y-2 group shadow-sm">
+                        <div class="w-12 h-12 flex items-center justify-center text-pink-400 group-hover:scale-110 transition-transform">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-10 h-10">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            </svg>
+                        </div>
+                        <span class="text-[10px] font-bold text-slate-600">Heart Graphic</span>
+                    </button>
+
+                    <!-- Tree Element -->
+                    <button type="button" onclick="addGraphicElement('tree')" class="p-3 rounded-xl border border-purple-100 bg-white hover:bg-purple-50 hover:border-pink-300 transition-all flex flex-col items-center text-center space-y-2 group shadow-sm">
+                        <div class="w-12 h-12 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-10 h-10">
+                                <path d="M11 21h2v-4h-2v4zm8-10h-2.17c-.41-1.16-1.52-2-2.83-2s-2.42.84-2.83 2H9c-1.66 0-3 1.34-3 3v2h16v-2c0-1.66-1.34-3-3-3zm-6-8c-2.76 0-5 2.24-5 5 0 2.05 1.23 3.81 3 4.58V11c0-1.1.9-2 2-2s2 .9 2 2v1.58c1.77-.77 3-2.53 3-4.58 0-2.76-2.24-5-5-5z"/>
+                            </svg>
+                        </div>
+                        <span class="text-[10px] font-bold text-slate-600">Tree Graphic</span>
+                    </button>
+
+                    <!-- Star Element -->
+                    <button type="button" onclick="addGraphicElement('star')" class="p-3 rounded-xl border border-purple-100 bg-white hover:bg-purple-50 hover:border-pink-300 transition-all flex flex-col items-center text-center space-y-2 group shadow-sm">
+                        <div class="w-12 h-12 flex items-center justify-center text-yellow-400 group-hover:scale-110 transition-transform">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-10 h-10">
+                                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                            </svg>
+                        </div>
+                        <span class="text-[10px] font-bold text-slate-600">Star Graphic</span>
+                    </button>
+
+                    <!-- Flower Element -->
+                    <button type="button" onclick="addGraphicElement('flower')" class="p-3 rounded-xl border border-purple-100 bg-white hover:bg-purple-50 hover:border-pink-300 transition-all flex flex-col items-center text-center space-y-2 group shadow-sm">
+                        <div class="w-12 h-12 flex items-center justify-center text-pink-500 group-hover:scale-110 transition-transform">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="w-10 h-10">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v3m0 12v3m9-9h-3M6 12H3m15.364-6.364l-2.121 2.121M8.757 15.243L6.636 17.364M18.364 18.364l-2.121-2.121M8.757 8.757L6.636 6.636M12 15a3 3 0 100-6 3 3 0 000 6z" />
+                            </svg>
+                        </div>
+                        <span class="text-[10px] font-bold text-slate-600">Flower</span>
+                    </button>
+
+                    <!-- Cloud Element -->
+                    <button type="button" onclick="addGraphicElement('cloud')" class="p-3 rounded-xl border border-purple-100 bg-white hover:bg-purple-50 hover:border-pink-300 transition-all flex flex-col items-center text-center space-y-2 group shadow-sm">
+                        <div class="w-12 h-12 flex items-center justify-center text-blue-300 group-hover:scale-110 transition-transform">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-10 h-10">
+                                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+                            </svg>
+                        </div>
+                        <span class="text-[10px] font-bold text-slate-600">Cloud</span>
+                    </button>
+
+                    <!-- Sun Element -->
+                    <button type="button" onclick="addGraphicElement('sun')" class="p-3 rounded-xl border border-purple-100 bg-white hover:bg-purple-50 hover:border-pink-300 transition-all flex flex-col items-center text-center space-y-2 group shadow-sm">
+                        <div class="w-12 h-12 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-10 h-10">
+                                <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58a.996.996 0 000 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L7.4 4.58a.996.996 0 00-1.41 0zM16.54 15.13c.39-.39.39-1.03 0-1.41l-1.06-1.06c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.38.39 1.03.39 1.41 0zM5.99 19.42c.39.39 1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.38-.39 1.02 0 1.41zm10.55-13.48c-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.02 0-1.41z"/>
+                            </svg>
+                        </div>
+                        <span class="text-[10px] font-bold text-slate-600">Sun</span>
+                    </button>
+
+                    <!-- Birthday Text Element -->
+                    <button type="button" onclick="addGraphicElement('birthday')" class="p-3 rounded-xl border border-purple-100 bg-white hover:bg-purple-50 hover:border-pink-300 transition-all flex flex-col items-center text-center space-y-2 group shadow-sm col-span-2">
+                        <div class="w-full h-12 flex items-center justify-center text-pink-500 group-hover:scale-105 transition-transform font-black font-outfit text-xs tracking-widest border border-dashed border-pink-200 rounded-lg">
+                            HAPPY BIRTHDAY!
+                        </div>
+                        <span class="text-[10px] font-bold text-slate-600">Birthday Banner</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Active Element Settings -->
+            <div id="elementSettingsPanel" class="glass-panel rounded-2xl p-5 space-y-4 hidden bg-white/85">
+                <div class="flex justify-between items-center border-b border-purple-50 pb-2">
+                    <h3 class="text-[10px] font-black uppercase tracking-widest text-purple-700">Element Controls</h3>
+                    <button type="button" onclick="deselectElement()" class="text-[10px] text-slate-400 hover:text-slate-600 font-bold">Deselect</button>
+                </div>
+                <div class="space-y-3 text-xs">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-slate-500">Selected:</span>
+                        <span id="selectedElType" class="font-black text-purple-950 uppercase tracking-wider">Heart</span>
+                    </div>
+
+                    <!-- Actions Row -->
+                    <div class="grid grid-cols-3 gap-2 pt-2">
+                        <button type="button" onclick="flipSelectedElement()" class="py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 text-[10px] font-bold rounded-xl flex flex-col items-center justify-center space-y-1 transition-colors">
+                            <span class="text-sm">⇄</span>
+                            <span>Flip H</span>
+                        </button>
+                        <button type="button" onclick="duplicateSelectedElement()" class="py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 text-[10px] font-bold rounded-xl flex flex-col items-center justify-center space-y-1 transition-colors">
+                            <span class="text-sm">⎘</span>
+                            <span>Clone</span>
+                        </button>
+                        <button type="button" onclick="deleteSelectedElement()" class="py-2 bg-red-50 hover:bg-red-100 text-red-600 text-[10px] font-bold rounded-xl flex flex-col items-center justify-center space-y-1 transition-colors">
+                            <span class="text-sm">🗑️</span>
+                            <span>Delete</span>
+                        </button>
+                    </div>
+
+                    <!-- Size Control Row -->
+                    <div class="flex items-center justify-between pt-2 border-t border-purple-50">
+                        <span class="font-bold text-slate-500">Size:</span>
+                        <div class="flex items-center space-x-2">
+                            <button type="button" onclick="resizeSelectedElement(-15)" class="w-8 h-8 rounded-lg bg-purple-50 hover:bg-purple-100 font-black text-purple-700 flex items-center justify-center text-sm">-</button>
+                            <span id="selectedElSize" class="font-bold text-purple-950">80px</span>
+                            <button type="button" onclick="resizeSelectedElement(15)" class="w-8 h-8 rounded-lg bg-purple-50 hover:bg-purple-100 font-black text-purple-700 flex items-center justify-center text-sm">+</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
         </section>
+        @else
+        <!-- Right Sidebar: Hidden Dummy Container (For Non-Custom Session) -->
+        <div id="rightSidebar" class="hidden"></div>
+        @endif
 
         <!-- Results Mode Right Panel: Frame Overlays Selection -->
         <section id="resultsOverlayPanel" class="lg:col-span-4 flex flex-col space-y-4 overflow-y-auto max-h-[calc(100vh-7rem)] hidden">
@@ -382,7 +519,6 @@
                 </p>
 
                 <div class="space-y-3">
-                    <!-- Option 0: No Overlay -->
                     <button onclick="selectResultsOverlay(null)" class="overlay-select-btn w-full p-3 rounded-2xl border-2 border-purple-100 bg-white hover:border-pink-300 transition-all text-left flex items-center space-x-3 text-xs font-bold text-purple-950">
                         <div class="w-12 h-16 bg-slate-100 rounded-lg border border-slate-200/50 flex items-center justify-center text-[10px] text-slate-500 font-extrabold uppercase">None</div>
                         <div>
@@ -391,38 +527,17 @@
                         </div>
                     </button>
 
-                    <!-- Option 1: Template 1 -->
-                    <button onclick="selectResultsOverlay('images/overlays/overlay_1.png')" class="overlay-select-btn w-full p-3 rounded-2xl border-2 border-purple-100 bg-white hover:border-pink-300 transition-all text-left flex items-center space-x-3 text-xs font-bold text-purple-950">
-                        <div class="w-12 h-16 bg-pink-100/50 rounded-lg border border-purple-200/20 relative overflow-hidden flex items-center justify-center">
-                            <img src="{{ asset('images/overlays/overlay_1.png') }}" class="w-full h-full object-contain">
-                        </div>
-                        <div>
-                            <div>Frame Design 1</div>
-                            <div class="text-[10px] text-purple-500/70 font-semibold mt-0.5">Cute themed overlay</div>
-                        </div>
-                    </button>
-
-                    <!-- Option 2: Template 2 -->
-                    <button onclick="selectResultsOverlay('images/overlays/overlay_2.png')" class="overlay-select-btn w-full p-3 rounded-2xl border-2 border-purple-100 bg-white hover:border-pink-300 transition-all text-left flex items-center space-x-3 text-xs font-bold text-purple-950">
-                        <div class="w-12 h-16 bg-blue-100/50 rounded-lg border border-purple-200/20 relative overflow-hidden flex items-center justify-center">
-                            <img src="{{ asset('images/overlays/overlay_2.png') }}" class="w-full h-full object-contain">
-                        </div>
-                        <div>
-                            <div>Frame Design 2</div>
-                            <div class="text-[10px] text-purple-500/70 font-semibold mt-0.5">Cool aesthetic border</div>
-                        </div>
-                    </button>
-
-                    <!-- Option 3: Template 3 -->
-                    <button onclick="selectResultsOverlay('images/overlays/overlay_3.png')" class="overlay-select-btn w-full p-3 rounded-2xl border-2 border-purple-100 bg-white hover:border-pink-300 transition-all text-left flex items-center space-x-3 text-xs font-bold text-purple-950">
-                        <div class="w-12 h-16 bg-amber-100/50 rounded-lg border border-purple-200/20 relative overflow-hidden flex items-center justify-center">
-                            <img src="{{ asset('images/overlays/overlay_3.png') }}" class="w-full h-full object-contain">
-                        </div>
-                        <div>
-                            <div>Frame Design 3</div>
-                            <div class="text-[10px] text-purple-500/70 font-semibold mt-0.5">Retro memory vibe</div>
-                        </div>
-                    </button>
+                    @foreach($overlays as $overlay)
+                        <button onclick="selectResultsOverlay('{{ asset($overlay->image_path) }}')" class="overlay-select-btn w-full p-3 rounded-2xl border-2 border-purple-100 bg-white hover:border-pink-300 transition-all text-left flex items-center space-x-3 text-xs font-bold text-purple-950" data-layout="{{ $overlay->category ? $overlay->category->slug : '' }}">
+                            <div class="w-12 h-16 bg-pink-100/50 rounded-lg border border-purple-200/20 relative overflow-hidden flex items-center justify-center">
+                                <img src="{{ asset($overlay->image_path) }}" class="w-full h-full object-contain">
+                            </div>
+                            <div>
+                                <div>{{ $overlay->name }}</div>
+                                <div class="text-[10px] text-purple-500/70 font-semibold mt-0.5">{{ $overlay->description }}</div>
+                            </div>
+                        </button>
+                    @endforeach
                 </div>
             </div>
         </section>
@@ -513,7 +628,20 @@
         </div>
 
         <!-- Bottom: Shutter Button and instructions -->
-        <div class="w-full max-w-md text-center space-y-6">
+        <div class="w-full max-w-md text-center space-y-5">
+            <!-- Camera Filters Selection Toolbar -->
+            <div class="space-y-1.5">
+                <label class="block text-[9px] font-bold text-purple-950/70 uppercase tracking-widest">Camera Filters</label>
+                <div class="flex justify-center space-x-1.5 overflow-x-auto py-1 px-2 bg-white/60 backdrop-blur-md rounded-2xl border border-purple-100 max-w-md mx-auto shadow-sm">
+                    <button onclick="setCameraFilter('normal')" id="cam-filter-normal" class="px-3 py-1.5 rounded-xl border border-purple-100 text-[10px] font-bold text-slate-600 bg-white hover:bg-pink-50/50 hover:text-pink-600 transition-all shadow-sm bg-pink-100 border-pink-400 text-pink-700">Normal</button>
+                    <button onclick="setCameraFilter('grayscale')" id="cam-filter-grayscale" class="px-3 py-1.5 rounded-xl border border-purple-100 text-[10px] font-bold text-slate-600 bg-white hover:bg-pink-50/50 hover:text-pink-600 transition-all shadow-sm">Mono</button>
+                    <button onclick="setCameraFilter('sepia')" id="cam-filter-sepia" class="px-3 py-1.5 rounded-xl border border-purple-100 text-[10px] font-bold text-slate-600 bg-white hover:bg-pink-50/50 hover:text-pink-600 transition-all shadow-sm">Sepia</button>
+                    <button onclick="setCameraFilter('chrome')" id="cam-filter-chrome" class="px-3 py-1.5 rounded-xl border border-purple-100 text-[10px] font-bold text-slate-600 bg-white hover:bg-pink-50/50 hover:text-pink-600 transition-all shadow-sm">Chrome</button>
+                    <button onclick="setCameraFilter('vintage')" id="cam-filter-vintage" class="px-3 py-1.5 rounded-xl border border-purple-100 text-[10px] font-bold text-slate-600 bg-white hover:bg-pink-50/50 hover:text-pink-600 transition-all shadow-sm">Vintage</button>
+                    <button onclick="setCameraFilter('neon')" id="cam-filter-neon" class="px-3 py-1.5 rounded-xl border border-purple-100 text-[10px] font-bold text-slate-600 bg-white hover:bg-pink-50/50 hover:text-pink-600 transition-all shadow-sm">Neon</button>
+                </div>
+            </div>
+
             <p class="text-xs text-purple-700 font-bold uppercase tracking-wider" id="boothCameraPrompt">
                 Ready? Press the button or wait for auto-capture!
             </p>
@@ -631,11 +759,7 @@
     <!-- Canvas Engine & Interactive Logic -->
     <script>
         // DOM Elements
-        const canvas = document.getElementById('photoboxCanvas');
-        const ctx = canvas.getContext('2d');
-        const frameBgColorPicker = document.getElementById('frameBgColorPicker');
-        const frameBgColorHex = document.getElementById('frameBgColorHex');
-        const slotSelector = document.getElementById('slotSelector');
+        let canvas, ctx, frameBgColorPicker, frameBgColorHex, slotSelector;
         
         // App State
         let activeFrameId = null;
@@ -647,6 +771,7 @@
         let slotImages = {}; // slotIndex -> { img: HTMLImageElement, zoom: 1, x: 0, y: 0 }
         let currentActiveSlotIndex = 0;
         let activeFilter = 'normal';
+        let frameScale = 1;
         
         // Webcam state
         let stream = null;
@@ -660,6 +785,13 @@
         let dragSlotIndex = -1;
         let dragOriginalX = 0;
         let dragOriginalY = 0;
+        let dragElementIndex = -1;
+        let dragStartOffset = { x: 0, y: 0 };
+        let canvasElements = [];
+        let selectedElementIndex = -1;
+        let isResizingElement = false;
+        let framePanX = 0;
+        let framePanY = 0;
 
         // Canvas Scale (for rendering hires vs preview)
         let canvasWidth = 400;
@@ -667,6 +799,12 @@
 
         // Initialize App
         window.addEventListener('DOMContentLoaded', () => {
+            canvas = document.getElementById('photoboxCanvas');
+            ctx = canvas.getContext('2d');
+            frameBgColorPicker = document.getElementById('frameBgColorPicker');
+            frameBgColorHex = document.getElementById('frameBgColorHex');
+            slotSelector = document.getElementById('slotSelector');
+
             // Check for frame_id query parameter
             const urlParams = new URLSearchParams(window.location.search);
             const targetFrameId = urlParams.get('frame_id');
@@ -699,6 +837,41 @@
                     }, 450);
                 }
             }
+
+            // Check for custom action to initialize preview layout
+            if (urlParams.get('action') === 'custom') {
+                frameSelected = true;
+                setTimeout(() => {
+                    previewCustomLayout('strip');
+                }, 500);
+            }
+
+            // Check for layout parameter to initialize specific layout preset
+            const urlLayout = urlParams.get('layout');
+            if (urlLayout) {
+                frameSelected = true;
+                setTimeout(() => {
+                    previewCustomLayout(urlLayout);
+                }, 500);
+            }
+
+            // Check for overlay_id parameter to automatically select overlay design
+            const urlOverlayId = urlParams.get('overlay_id');
+            if (urlOverlayId) {
+                const overlaysList = @json($overlays);
+                const selectedOverlay = overlaysList.find(o => o.id == urlOverlayId);
+                if (selectedOverlay) {
+                    setTimeout(() => {
+                        selectResultsOverlay(selectedOverlay.image_path);
+                        // Also find the button and highlight it
+                        document.querySelectorAll('.overlay-select-btn').forEach(btn => {
+                            if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(selectedOverlay.image_path)) {
+                                btn.classList.add('border-pink-300', 'bg-pink-50/50');
+                            }
+                        });
+                    }, 600);
+                }
+            }
             
             if (!frameSelected) {
                 // Select first frame in list if exists
@@ -714,6 +887,29 @@
                         {x: 40, y: 890, width: 320, height: 240}
                     ]);
                 }
+            }
+
+            // Listen to touchpad scroll / pinch events on canvas wrapper to zoom/pan frame
+            const canvasWrapper = document.getElementById('canvasWrapper');
+            if (canvasWrapper) {
+                canvas.style.transformOrigin = 'center center';
+                
+                canvasWrapper.addEventListener('wheel', (e) => {
+                    if (e.ctrlKey) {
+                        e.preventDefault();
+                        // Pinch to zoom (trackpad)
+                        const speed = 0.015;
+                        frameScale -= e.deltaY * speed;
+                        frameScale = Math.min(Math.max(0.4, frameScale), 3.0);
+                        canvas.style.transform = `translate(${framePanX}px, ${framePanY}px) scale(${frameScale})`;
+                    } else {
+                        // Touchpad scroll to pan frame vertically/horizontally
+                        e.preventDefault();
+                        framePanY -= e.deltaY;
+                        framePanX -= e.deltaX;
+                        canvas.style.transform = `translate(${framePanX}px, ${framePanY}px) scale(${frameScale})`;
+                    }
+                }, { passive: false });
             }
 
             // Mouse interaction on canvas
@@ -787,10 +983,10 @@
             slotImages = {}; // reset slot images to be safe or map existing
 
             // Adjust Canvas default width/height based on layout ratio
-            if (layoutType === 'strip') {
+            if (layoutType === 'strip' || layoutType === 'strip_3') {
                 canvasWidth = 400;
                 canvasHeight = 1200;
-            } else if (layoutType === 'grid') {
+            } else if (layoutType === 'grid' || layoutType === 'grid_6') {
                 canvasWidth = 1000;
                 canvasHeight = 1200;
             } else {
@@ -799,12 +995,22 @@
                 canvasHeight = 800;
             }
 
+            // Sync hidden slots input
+            const slotsInput = document.getElementById('slotsJsonInput');
+            if (slotsInput) {
+                slotsInput.value = JSON.stringify(slots);
+            }
+
             canvas.width = canvasWidth;
             canvas.height = canvasHeight;
 
             // Load colors
-            frameBgColorPicker.value = bgColor;
-            frameBgColorHex.value = bgColor.toUpperCase();
+            if (frameBgColorPicker) {
+                frameBgColorPicker.value = bgColor;
+            }
+            if (frameBgColorHex) {
+                frameBgColorHex.value = bgColor.toUpperCase();
+            }
 
             // Set overlay image if exists
             activeOverlayImg = null;
@@ -836,9 +1042,137 @@
 
             // Redraw everything
             drawCanvas();
+
+            // Filter overlay designs matching the chosen layout category
+            filterOverlayDesigns(layoutType);
+        }
+
+        // Filter overlays based on active layout type
+        function filterOverlayDesigns(layoutType) {
+            document.querySelectorAll('.overlay-select-btn').forEach(btn => {
+                const targetLayout = btn.getAttribute('data-layout');
+                if (!targetLayout || targetLayout === 'all' || targetLayout === layoutType) {
+                    btn.style.display = 'flex';
+                } else {
+                    btn.style.display = 'none';
+                }
+            });
+        }
+
+        // Apply camera filter visually to webcam stream and save filter state
+        function setCameraFilter(filterName) {
+            document.querySelectorAll('[id^="cam-filter-"]').forEach(btn => {
+                btn.classList.remove('bg-pink-100', 'border-pink-400', 'text-pink-700');
+            });
+            const activeBtn = document.getElementById(`cam-filter-${filterName}`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-pink-100', 'border-pink-400', 'text-pink-700');
+            }
+
+            activeFilter = filterName;
+
+            const video = document.getElementById('boothWebcamStream');
+            const mainVideo = document.getElementById('webcamStream');
+            let cssFilter = 'none';
+            switch (filterName) {
+                case 'grayscale':
+                    cssFilter = 'grayscale(1)';
+                    break;
+                case 'sepia':
+                    cssFilter = 'sepia(0.8)';
+                    break;
+                case 'chrome':
+                    cssFilter = 'contrast(1.2) saturate(1.4)';
+                    break;
+                case 'vintage':
+                    cssFilter = 'sepia(0.4) contrast(0.9) brightness(0.95)';
+                    break;
+                case 'neon':
+                    cssFilter = 'saturate(2) hue-rotate(-20deg) contrast(1.1)';
+                    break;
+                default:
+                    cssFilter = 'none';
+            }
+
+            if (video) {
+                video.style.filter = cssFilter;
+            }
+            if (mainVideo) {
+                mainVideo.style.filter = cssFilter;
+            }
+        }
+
+        // Preview helpers for custom layout creation
+        function previewCustomLayout(layoutType) {
+            let slots = [];
+            let bgColor = document.querySelector('input[name="bg_color"]') ? document.querySelector('input[name="bg_color"]').value : '#ffffff';
+            const shapeSelector = document.getElementById('slotShapeSelector');
+            const shape = shapeSelector ? shapeSelector.value : 'rect';
+
+            if (layoutType === 'strip') {
+                slots = [
+                    {x: 40, y: 50, width: 320, height: 240, shape: shape},
+                    {x: 40, y: 330, width: 320, height: 240, shape: shape},
+                    {x: 40, y: 610, width: 320, height: 240, shape: shape},
+                    {x: 40, y: 890, width: 320, height: 240, shape: shape}
+                ];
+            } else if (layoutType === 'strip_3') {
+                slots = [
+                    {x: 40, y: 80, width: 320, height: 250, shape: shape},
+                    {x: 40, y: 390, width: 320, height: 250, shape: shape},
+                    {x: 40, y: 700, width: 320, height: 250, shape: shape}
+                ];
+            } else if (layoutType === 'grid') {
+                slots = [
+                    {x: 50, y: 50, width: 420, height: 315, shape: shape},
+                    {x: 530, y: 50, width: 420, height: 315, shape: shape},
+                    {x: 50, y: 415, width: 420, height: 315, shape: shape},
+                    {x: 530, y: 415, width: 420, height: 315, shape: shape}
+                ];
+            } else if (layoutType === 'grid_6') {
+                slots = [
+                    {x: 50, y: 50, width: 420, height: 315, shape: shape},
+                    {x: 530, y: 50, width: 420, height: 315, shape: shape},
+                    {x: 50, y: 425, width: 420, height: 315, shape: shape},
+                    {x: 530, y: 425, width: 420, height: 315, shape: shape},
+                    {x: 50, y: 800, width: 420, height: 315, shape: shape},
+                    {x: 530, y: 800, width: 420, height: 315, shape: shape}
+                ];
+            } else if (layoutType === 'single') {
+                slots = [
+                    {x: 50, y: 50, width: 900, height: 675, shape: shape}
+                ];
+            }
+            selectFrame(null, layoutType, bgColor, null, slots);
+        }
+
+        function previewCustomBg(bgColor) {
+            activeBgColor = bgColor;
+            const picker = document.querySelector('input[type="color"][name="bg_color"]');
+            const textInput = document.getElementById('customBgColorHex');
+            if (picker) picker.value = bgColor;
+            if (textInput) textInput.value = bgColor.toUpperCase();
+            drawCanvas();
+        }
+
+        function previewCustomOverlay(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = () => {
+                        activeOverlayImg = img;
+                        processOverlayImage(img);
+                        drawCanvas();
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
         }
 
         function regenerateSlotSelectors() {
+            if (!slotSelector) return;
             slotSelector.innerHTML = '';
             activeSlots.forEach((slot, index) => {
                 const btn = document.createElement('button');
@@ -846,7 +1180,7 @@
                 btn.id = `slot-btn-${index}`;
                 btn.onclick = () => selectActiveSlot(index);
                 btn.innerHTML = `
-                    Slot ${index + 1}
+                    ${index + 1}
                     <input type="file" id="slot-file-${index}" accept="image/*" class="hidden" onchange="loadImageToSlot(event, ${index})">
                 `;
                 slotSelector.appendChild(btn);
@@ -867,8 +1201,12 @@
         function updateFrameBgColor(color) {
             if (/^#[0-9A-F]{6}$/i.test(color)) {
                 activeBgColor = color;
-                frameBgColorPicker.value = color;
-                frameBgColorHex.value = color.toUpperCase();
+                if (frameBgColorPicker) {
+                    frameBgColorPicker.value = color;
+                }
+                if (frameBgColorHex) {
+                    frameBgColorHex.value = color.toUpperCase();
+                }
                 drawCanvas();
             }
         }
@@ -946,9 +1284,9 @@
             // 2. Draw Photos inside Slots
             activeSlots.forEach((slot, index) => {
                 ctx.save();
+                
                 // Create clipping region for the slot
-                ctx.beginPath();
-                ctx.rect(slot.x, slot.y, slot.width, slot.height);
+                createSlotPath(ctx, slot);
                 ctx.clip();
 
                 const slotImg = slotImages[index];
@@ -973,19 +1311,23 @@
                     // Reset filter
                     ctx.filter = 'none';
                 } else {
-                    // Draw slot placeholder dashed rectangle
-                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
-                    ctx.lineWidth = 2;
-                    ctx.setLineDash([8, 6]);
-                    ctx.strokeRect(slot.x + 2, slot.y + 2, slot.width - 4, slot.height - 4);
+                    // Fill slot with clean white to look like a template slot cutout
+                    ctx.fillStyle = '#ffffff';
+                    createSlotPath(ctx, slot);
+                    ctx.fill();
+                    
+                    // Draw slot placeholder subtle border
+                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
                     
                     // Text placeholder
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
-                    ctx.font = 'bold 12px "Instrument Sans"';
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                    ctx.font = 'bold 16px "Instrument Sans"';
                     ctx.textAlign = 'center';
-                    ctx.fillText(`SLOT ${index + 1}`, slot.x + slot.width / 2, slot.y + slot.height / 2 - 4);
+                    ctx.fillText(`${index + 1}`, slot.x + slot.width / 2, slot.y + slot.height / 2 - 4);
                     ctx.font = '10px "Instrument Sans"';
-                    ctx.fillText('Click Slot manager to add', slot.x + slot.width / 2, slot.y + slot.height / 2 + 12);
+                    ctx.fillText('Click to fill', slot.x + slot.width / 2, slot.y + slot.height / 2 + 12);
                 }
                 ctx.restore();
             });
@@ -1006,6 +1348,496 @@
                 ctx.font = 'italic bold 14px "Outfit"';
                 ctx.textAlign = 'center';
                 ctx.fillText('• PHOTOBOX STUDIO •', canvasWidth / 2, canvasHeight - 40);
+            }
+
+            // 5. Draw Custom Graphic Elements
+            canvasElements.forEach((el, index) => {
+                if (el.type === 'heart') {
+                    drawHeart(ctx, el.x, el.y, el.width, el.height, el.flippedH);
+                } else if (el.type === 'star') {
+                    drawStar(ctx, el.x, el.y, el.width, el.height, el.flippedH);
+                } else if (el.type === 'fish') {
+                    drawFish(ctx, el.x, el.y, el.width, el.height, el.flippedH);
+                } else if (el.type === 'wave') {
+                    drawWave(ctx, el.x, el.y, el.width, el.height, el.flippedH);
+                } else if (el.type === 'tree') {
+                    drawTree(ctx, el.x, el.y, el.width, el.height, el.flippedH);
+                } else if (el.type === 'flower') {
+                    drawFlower(ctx, el.x, el.y, el.width, el.height, el.flippedH);
+                } else if (el.type === 'cloud') {
+                    drawCloud(ctx, el.x, el.y, el.width, el.height, el.flippedH);
+                } else if (el.type === 'sun') {
+                    drawSun(ctx, el.x, el.y, el.width, el.height, el.flippedH);
+                } else if (el.type === 'pen') {
+                    drawPen(ctx, el.x, el.y, el.width, el.height, el.flippedH);
+                } else if (el.type === 'pencil') {
+                    drawPencil(ctx, el.x, el.y, el.width, el.height, el.flippedH);
+                } else if (el.type === 'apple') {
+                    drawApple(ctx, el.x, el.y, el.width, el.height, el.flippedH);
+                } else if (el.type === 'birthday') {
+                    drawBirthday(ctx, el.x, el.y, el.width, el.height, el.flippedH);
+                }
+
+                // If selected, draw selection border box & corner resize handle
+                if (index === selectedElementIndex) {
+                    ctx.save();
+                    ctx.strokeStyle = '#ec4899';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 4]);
+                    ctx.strokeRect(el.x - el.width / 2, el.y - el.height / 2, el.width, el.height);
+                    
+                    // Draw resize handle circle at bottom right
+                    ctx.fillStyle = '#ec4899';
+                    ctx.beginPath();
+                    ctx.arc(el.x + el.width / 2, el.y + el.height / 2, 7, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            });
+        }
+
+        // Vector drawings for custom elements
+        function drawHeart(c, x, y, w, h, flippedH) {
+            c.save();
+            c.translate(x, y);
+            if (flippedH) c.scale(-1, 1);
+            c.fillStyle = '#ff758f';
+            c.beginPath();
+            c.moveTo(0, -h/4);
+            c.bezierCurveTo(-w/2, -h/2, -w/2, h/4, 0, h/2);
+            c.bezierCurveTo(w/2, h/4, w/2, -h/2, 0, -h/4);
+            c.fill();
+            c.restore();
+        }
+
+        function drawStar(c, x, y, w, h, flippedH) {
+            c.save();
+            c.translate(x, y);
+            if (flippedH) c.scale(-1, 1);
+            c.fillStyle = '#ffca3a';
+            c.beginPath();
+            let spikes = 5;
+            let outerRadius = w/2;
+            let innerRadius = w/4;
+            let rot = Math.PI / 2 * 3;
+            let cx = 0, cy = 0;
+            let step = Math.PI / spikes;
+            c.moveTo(0, -outerRadius);
+            for (let i = 0; i < spikes; i++) {
+                cx = Math.cos(rot) * outerRadius;
+                cy = Math.sin(rot) * outerRadius;
+                c.lineTo(cx, cy);
+                rot += step;
+                cx = Math.cos(rot) * innerRadius;
+                cy = Math.sin(rot) * innerRadius;
+                c.lineTo(cx, cy);
+                rot += step;
+            }
+            c.lineTo(0, -outerRadius);
+            c.closePath();
+            c.fill();
+            c.restore();
+        }
+
+        function drawFish(c, x, y, w, h, flippedH) {
+            c.save();
+            c.translate(x, y);
+            if (flippedH) c.scale(-1, 1);
+            c.fillStyle = '#8ecae6';
+            c.beginPath();
+            c.ellipse(0, 0, w/2, h/3, 0, 0, 2 * Math.PI);
+            c.fill();
+            c.beginPath();
+            c.moveTo(-w/2, 0);
+            c.lineTo(-w*0.7, -h/3);
+            c.lineTo(-w*0.7, h/3);
+            c.closePath();
+            c.fill();
+            c.fillStyle = '#ffffff';
+            c.beginPath();
+            c.arc(w/4, -h/8, 4, 0, 2 * Math.PI);
+            c.fill();
+            c.fillStyle = '#000000';
+            c.beginPath();
+            c.arc(w/4, -h/8, 2, 0, 2 * Math.PI);
+            c.fill();
+            c.restore();
+        }
+
+        function drawWave(c, x, y, w, h, flippedH) {
+            c.save();
+            c.translate(x, y);
+            if (flippedH) c.scale(-1, 1);
+            c.strokeStyle = '#219ebc';
+            c.lineWidth = 4;
+            c.lineCap = 'round';
+            c.beginPath();
+            c.moveTo(-w/2, 0);
+            c.bezierCurveTo(-w/4, -h/2, 0, h/2, w/2, 0);
+            c.stroke();
+            c.restore();
+        }
+
+        function drawTree(c, x, y, w, h, flippedH) {
+            c.save();
+            c.translate(x, y);
+            if (flippedH) c.scale(-1, 1);
+            c.fillStyle = '#b7094c';
+            c.fillRect(-w/10, h/10, w/5, h/3);
+            c.fillStyle = '#38b000';
+            c.beginPath();
+            c.moveTo(0, -h/2);
+            c.lineTo(-w/2, -h/10);
+            c.lineTo(w/2, -h/10);
+            c.closePath();
+            c.fill();
+            c.beginPath();
+            c.moveTo(0, -h/4);
+            c.lineTo(-w/2.5, h/10);
+            c.lineTo(w/2.5, h/10);
+            c.closePath();
+            c.fill();
+            c.restore();
+        }
+
+        function drawFlower(c, x, y, w, h, flippedH) {
+            c.save();
+            c.translate(x, y);
+            if (flippedH) c.scale(-1, 1);
+            c.strokeStyle = '#fb8500';
+            c.lineWidth = 2;
+            
+            // Draw petals (5 circles)
+            let petalColor = '#ff758f';
+            c.fillStyle = petalColor;
+            for (let i = 0; i < 5; i++) {
+                c.save();
+                c.rotate(i * 2 * Math.PI / 5);
+                c.beginPath();
+                c.arc(0, -h/4, w/5, 0, 2*Math.PI);
+                c.fill();
+                c.stroke();
+                c.restore();
+            }
+            // Draw center disk
+            c.fillStyle = '#ffca3a';
+            c.beginPath();
+            c.arc(0, 0, w/6, 0, 2*Math.PI);
+            c.fill();
+            c.stroke();
+            
+            c.restore();
+        }
+
+        function drawCloud(c, x, y, w, h, flippedH) {
+            c.save();
+            c.translate(x, y);
+            if (flippedH) c.scale(-1, 1);
+            c.fillStyle = '#eaf4f4';
+            c.strokeStyle = '#a8dadc';
+            c.lineWidth = 3;
+            c.beginPath();
+            c.arc(-w/4, h/10, w/4, 0.5 * Math.PI, 1.5 * Math.PI);
+            c.arc(0, -h/10, w/3, 1.0 * Math.PI, 2.0 * Math.PI);
+            c.arc(w/4, h/10, w/4, 1.5 * Math.PI, 0.5 * Math.PI);
+            c.closePath();
+            c.fill();
+            c.stroke();
+            c.restore();
+        }
+
+        function drawSun(c, x, y, w, h, flippedH) {
+            c.save();
+            c.translate(x, y);
+            if (flippedH) c.scale(-1, 1);
+            c.fillStyle = '#ffb703';
+            c.strokeStyle = '#fb8500';
+            c.lineWidth = 3;
+            c.beginPath();
+            c.arc(0, 0, w/4, 0, 2*Math.PI);
+            c.fill();
+            c.stroke();
+            
+            for (let i = 0; i < 8; i++) {
+                c.rotate(Math.PI / 4);
+                c.beginPath();
+                c.moveTo(0, -w/3);
+                c.lineTo(0, -w/2);
+                c.stroke();
+            }
+            c.restore();
+        }
+
+        function drawPen(c, x, y, w, h, flippedH) {
+            c.save();
+            c.translate(x, y);
+            if (flippedH) c.scale(-1, 1);
+            c.rotate(-Math.PI / 4);
+            c.fillStyle = '#4361ee';
+            c.strokeStyle = '#3f37c9';
+            c.lineWidth = 2;
+            
+            c.fillRect(-w/10, -h/3, w/5, h*0.6);
+            c.strokeRect(-w/10, -h/3, w/5, h*0.6);
+            
+            c.fillStyle = '#e0e0e0';
+            c.beginPath();
+            c.moveTo(-w/10, h*0.27);
+            c.lineTo(0, h/2);
+            c.lineTo(w/10, h*0.27);
+            c.closePath();
+            c.fill();
+            c.stroke();
+            
+            c.fillStyle = '#000000';
+            c.beginPath();
+            c.moveTo(-w/25, h*0.43);
+            c.lineTo(0, h/2);
+            c.lineTo(w/25, h*0.43);
+            c.closePath();
+            c.fill();
+            
+            c.restore();
+        }
+
+        function drawPencil(c, x, y, w, h, flippedH) {
+            c.save();
+            c.translate(x, y);
+            if (flippedH) c.scale(-1, 1);
+            c.rotate(-Math.PI / 4);
+            c.fillStyle = '#ffb703';
+            c.strokeStyle = '#d48a00';
+            c.lineWidth = 2;
+            
+            c.fillRect(-w/10, -h/3, w/5, h*0.5);
+            c.strokeRect(-w/10, -h/3, w/5, h*0.5);
+            
+            c.fillStyle = '#ff758f';
+            c.fillRect(-w/10, -h*0.42, w/5, h*0.09);
+            c.strokeRect(-w/10, -h*0.42, w/5, h*0.09);
+            
+            c.fillStyle = '#ffeedd';
+            c.beginPath();
+            c.moveTo(-w/10, h*0.17);
+            c.lineTo(0, h/2);
+            c.lineTo(w/10, h*0.17);
+            c.closePath();
+            c.fill();
+            c.stroke();
+            
+            c.fillStyle = '#2b2d42';
+            c.beginPath();
+            c.moveTo(-w/25, h*0.4);
+            c.lineTo(0, h/2);
+            c.lineTo(w/25, h*0.4);
+            c.closePath();
+            c.fill();
+            
+            c.restore();
+        }
+
+        function drawApple(c, x, y, w, h, flippedH) {
+            c.save();
+            c.translate(x, y);
+            if (flippedH) c.scale(-1, 1);
+            c.fillStyle = '#d90429';
+            c.strokeStyle = '#b7094c';
+            c.lineWidth = 2;
+            c.beginPath();
+            c.arc(-w/6, 0, w/3, 0, 2*Math.PI);
+            c.arc(w/6, 0, w/3, 0, 2*Math.PI);
+            c.fill();
+            c.stroke();
+            
+            c.strokeStyle = '#6f4e37';
+            c.lineWidth = 3;
+            c.beginPath();
+            c.arc(-w/10, -h/2.2, w/4, 0, 0.4*Math.PI);
+            c.stroke();
+            
+            c.fillStyle = '#38b000';
+            c.beginPath();
+            c.ellipse(w/12, -h/2, w/6, h/10, Math.PI/4, 0, 2*Math.PI);
+            c.fill();
+            
+            c.restore();
+        }
+
+        function drawBirthday(c, x, y, w, h, flippedH) {
+            c.save();
+            c.translate(x, y);
+            if (flippedH) c.scale(-1, 1);
+            
+            c.fillStyle = 'rgba(251, 113, 133, 0.15)';
+            c.fillRect(-w/2, -h/2, w, h);
+            
+            c.strokeStyle = '#fb7185';
+            c.lineWidth = 2;
+            c.setLineDash([4, 4]);
+            c.strokeRect(-w/2, -h/2, w, h);
+            c.setLineDash([]);
+            
+            c.fillStyle = '#e11d48';
+            c.font = 'bold italic 13px "Outfit", sans-serif';
+            c.textAlign = 'center';
+            c.textBaseline = 'middle';
+            c.fillText('🎉 HAPPY BIRTHDAY! 🎉', 0, 0);
+            
+            c.restore();
+        }
+
+        function addGraphicElement(type) {
+            canvasElements.push({
+                type: type,
+                x: canvasWidth / 2,
+                y: canvasHeight / 2,
+                width: 80,
+                height: 80,
+                flippedH: false
+            });
+            selectElement(canvasElements.length - 1);
+        }
+
+        function clearGraphicElements() {
+            canvasElements = [];
+            selectElement(-1);
+        }
+
+        // Selected element controls
+        function selectElement(index) {
+            selectedElementIndex = index;
+            if (index === -1) {
+                document.getElementById('elementSettingsPanel').classList.add('hidden');
+            } else {
+                const el = canvasElements[index];
+                document.getElementById('elementSettingsPanel').classList.remove('hidden');
+                document.getElementById('selectedElType').innerText = el.type;
+                document.getElementById('selectedElSize').innerText = el.width + 'px';
+            }
+            drawCanvas();
+        }
+
+        function deselectElement() {
+            selectElement(-1);
+        }
+
+        function flipSelectedElement() {
+            if (selectedElementIndex !== -1) {
+                const el = canvasElements[selectedElementIndex];
+                el.flippedH = !el.flippedH;
+                drawCanvas();
+            }
+        }
+
+        function duplicateSelectedElement() {
+            if (selectedElementIndex !== -1) {
+                const el = canvasElements[selectedElementIndex];
+                canvasElements.push({
+                    type: el.type,
+                    x: el.x + 20,
+                    y: el.y + 20,
+                    width: el.width,
+                    height: el.height,
+                    flippedH: el.flippedH
+                });
+                selectElement(canvasElements.length - 1);
+            }
+        }
+
+        function deleteSelectedElement() {
+            if (selectedElementIndex !== -1) {
+                canvasElements.splice(selectedElementIndex, 1);
+                selectElement(-1);
+            }
+        }
+
+        function resizeSelectedElement(delta) {
+            if (selectedElementIndex !== -1) {
+                const el = canvasElements[selectedElementIndex];
+                el.width = Math.max(20, el.width + delta);
+                el.height = Math.max(20, el.height + delta);
+                document.getElementById('selectedElSize').innerText = el.width + 'px';
+                drawCanvas();
+            }
+        }
+
+        function updateSlotShape(shape) {
+            activeSlots.forEach(slot => {
+                slot.shape = shape;
+            });
+            drawCanvas();
+        }
+
+        function createSlotPath(c, slot) {
+            c.beginPath();
+            const shape = slot.shape || 'rect';
+            if (shape === 'circle') {
+                const r = Math.min(slot.width, slot.height) / 2;
+                c.arc(slot.x + slot.width / 2, slot.y + slot.height / 2, r, 0, 2 * Math.PI);
+            } else if (shape === 'heart') {
+                const cx = slot.x + slot.width / 2;
+                const cy = slot.y + slot.height / 2;
+                const w = slot.width;
+                const h = slot.height;
+                c.moveTo(cx, cy - h/4);
+                c.bezierCurveTo(cx - w/2, cy - h/2, cx - w/2, cy + h/4, cx, cy + h/2);
+                c.bezierCurveTo(cx + w/2, cy + h/4, cx + w/2, cy - h/2, cx, cy - h/4);
+            } else if (shape === 'star') {
+                const cx = slot.x + slot.width / 2;
+                const cy = slot.y + slot.height / 2;
+                const spikes = 5;
+                const outerRadius = Math.min(slot.width, slot.height) / 2;
+                const innerRadius = outerRadius / 2;
+                let rot = Math.PI / 2 * 3;
+                let step = Math.PI / spikes;
+                c.moveTo(cx, cy - outerRadius);
+                for (let i = 0; i < spikes; i++) {
+                    c.lineTo(cx + Math.cos(rot) * outerRadius, cy + Math.sin(rot) * outerRadius);
+                    rot += step;
+                    c.lineTo(cx + Math.cos(rot) * innerRadius, cy + Math.sin(rot) * innerRadius);
+                    rot += step;
+                }
+                c.closePath();
+            } else {
+                c.rect(slot.x, slot.y, slot.width, slot.height);
+            }
+        }
+
+        function createHiresSlotPath(c, slot, scale) {
+            c.beginPath();
+            const shape = slot.shape || 'rect';
+            const sX = slot.x * scale;
+            const sY = slot.y * scale;
+            const sW = slot.width * scale;
+            const sH = slot.height * scale;
+            
+            if (shape === 'circle') {
+                const r = Math.min(sW, sH) / 2;
+                c.arc(sX + sW / 2, sY + sH / 2, r, 0, 2 * Math.PI);
+            } else if (shape === 'heart') {
+                const cx = sX + sW / 2;
+                const cy = sY + sH / 2;
+                c.moveTo(cx, cy - sH/4);
+                c.bezierCurveTo(cx - sW/2, cy - sH/2, cx - sW/2, cy + sH/4, cx, cy + sH/2);
+                c.bezierCurveTo(cx + sW/2, cy + sH/4, cx + sW/2, cy - sH/2, cx, cy - sH/4);
+            } else if (shape === 'star') {
+                const cx = sX + sW / 2;
+                const cy = sY + sH / 2;
+                const spikes = 5;
+                const outerRadius = Math.min(sW, sH) / 2;
+                const innerRadius = outerRadius / 2;
+                let rot = Math.PI / 2 * 3;
+                let step = Math.PI / spikes;
+                c.moveTo(cx, cy - outerRadius);
+                for (let i = 0; i < spikes; i++) {
+                    c.lineTo(cx + Math.cos(rot) * outerRadius, cy + Math.sin(rot) * outerRadius);
+                    rot += step;
+                    c.lineTo(cx + Math.cos(rot) * innerRadius, cy + Math.sin(rot) * innerRadius);
+                    rot += step;
+                }
+                c.closePath();
+            } else {
+                c.rect(sX, sY, sW, sH);
             }
         }
 
@@ -1060,8 +1892,38 @@
 
         function startDrag(e) {
             const coords = getCanvasMouseCoords(e);
-            const slotIdx = getSlotAtCoords(coords.x, coords.y);
             
+            // 1. Check if user clicked on the corner resize handle of the currently selected element
+            if (selectedElementIndex !== -1) {
+                const el = canvasElements[selectedElementIndex];
+                const handleX = el.x + el.width / 2;
+                const handleY = el.y + el.height / 2;
+                const dist = Math.hypot(coords.x - handleX, coords.y - handleY);
+                if (dist <= 15) {
+                    isDragging = true;
+                    isResizingElement = true;
+                    dragElementIndex = selectedElementIndex;
+                    return;
+                }
+            }
+
+            // 2. Check if user clicked inside any graphic element to select and drag it
+            for (let i = canvasElements.length - 1; i >= 0; i--) {
+                const el = canvasElements[i];
+                const dx = coords.x - el.x;
+                const dy = coords.y - el.y;
+                if (Math.abs(dx) <= el.width / 2 && Math.abs(dy) <= el.height / 2) {
+                    isDragging = true;
+                    dragElementIndex = i;
+                    dragStartOffset.x = dx;
+                    dragStartOffset.y = dy;
+                    selectElement(i);
+                    return;
+                }
+            }
+
+            // 3. Fallback to slot image panning
+            const slotIdx = getSlotAtCoords(coords.x, coords.y);
             if (slotIdx !== -1 && slotImages[slotIdx]) {
                 isDragging = true;
                 dragSlotIndex = slotIdx;
@@ -1069,24 +1931,52 @@
                 startDragY = coords.y;
                 dragOriginalX = slotImages[slotIdx].x;
                 dragOriginalY = slotImages[slotIdx].y;
+                selectElement(-1); // clicked on slot, deselect element
+            } else {
+                selectElement(-1); // clicked on background, deselect element
             }
         }
 
         function dragImage(e) {
-            if (!isDragging || dragSlotIndex === -1) return;
+            if (!isDragging) return;
             const coords = getCanvasMouseCoords(e);
-            const dx = coords.x - startDragX;
-            const dy = coords.y - startDragY;
 
-            slotImages[dragSlotIndex].x = dragOriginalX + dx;
-            slotImages[dragSlotIndex].y = dragOriginalY + dy;
-            
-            drawCanvas();
+            if (isResizingElement && dragElementIndex !== -1) {
+                // Resize element: distance from center to handle
+                const el = canvasElements[dragElementIndex];
+                const newW = Math.max(20, (coords.x - el.x) * 2);
+                const newH = Math.max(20, (coords.y - el.y) * 2);
+                el.width = newW;
+                el.height = newH;
+                document.getElementById('selectedElSize').innerText = Math.round(newW) + 'px';
+                drawCanvas();
+                return;
+            }
+
+            if (dragElementIndex !== -1) {
+                // Drag the graphic element
+                canvasElements[dragElementIndex].x = coords.x - dragStartOffset.x;
+                canvasElements[dragElementIndex].y = coords.y - dragStartOffset.y;
+                drawCanvas();
+                return;
+            }
+
+            if (dragSlotIndex !== -1) {
+                const dx = coords.x - startDragX;
+                const dy = coords.y - startDragY;
+
+                slotImages[dragSlotIndex].x = dragOriginalX + dx;
+                slotImages[dragSlotIndex].y = dragOriginalY + dy;
+                
+                drawCanvas();
+            }
         }
 
         function endDrag() {
             isDragging = false;
             dragSlotIndex = -1;
+            dragElementIndex = -1;
+            isResizingElement = false;
         }
 
         function zoomImage(e) {
@@ -1281,8 +2171,7 @@
                 hCtx.save();
                 
                 // Hires clipping region
-                hCtx.beginPath();
-                hCtx.rect(slot.x * scale, slot.y * scale, slot.width * scale, slot.height * scale);
+                createHiresSlotPath(hCtx, slot, scale);
                 hCtx.clip();
 
                 const slotImg = slotImages[index];
@@ -1301,6 +2190,10 @@
                     
                     hCtx.drawImage(slotImg.img, x, y, drawWidth, drawHeight);
                     hCtx.filter = 'none';
+                } else {
+                    hCtx.fillStyle = '#ffffff';
+                    createHiresSlotPath(hCtx, slot, scale);
+                    hCtx.fill();
                 }
                 hCtx.restore();
             });
@@ -1321,6 +2214,40 @@
                 hCtx.textAlign = 'center';
                 hCtx.fillText('• PHOTOBOX STUDIO •', hiresCanvas.width / 2, hiresCanvas.height - 40 * scale);
             }
+
+            // Draw Custom Graphic Elements on Hires Canvas
+            canvasElements.forEach((el) => {
+                const scaledX = el.x * scale;
+                const scaledY = el.y * scale;
+                const scaledW = el.width * scale;
+                const scaledH = el.height * scale;
+
+                if (el.type === 'heart') {
+                    drawHeart(hCtx, scaledX, scaledY, scaledW, scaledH, el.flippedH);
+                } else if (el.type === 'star') {
+                    drawStar(hCtx, scaledX, scaledY, scaledW, scaledH, el.flippedH);
+                } else if (el.type === 'fish') {
+                    drawFish(hCtx, scaledX, scaledY, scaledW, scaledH, el.flippedH);
+                } else if (el.type === 'wave') {
+                    drawWave(hCtx, scaledX, scaledY, scaledW, scaledH, el.flippedH);
+                } else if (el.type === 'tree') {
+                    drawTree(hCtx, scaledX, scaledY, scaledW, scaledH, el.flippedH);
+                } else if (el.type === 'flower') {
+                    drawFlower(hCtx, scaledX, scaledY, scaledW, scaledH, el.flippedH);
+                } else if (el.type === 'cloud') {
+                    drawCloud(hCtx, scaledX, scaledY, scaledW, scaledH, el.flippedH);
+                } else if (el.type === 'sun') {
+                    drawSun(hCtx, scaledX, scaledY, scaledW, scaledH, el.flippedH);
+                } else if (el.type === 'pen') {
+                    drawPen(hCtx, scaledX, scaledY, scaledW, scaledH, el.flippedH);
+                } else if (el.type === 'pencil') {
+                    drawPencil(hCtx, scaledX, scaledY, scaledW, scaledH, el.flippedH);
+                } else if (el.type === 'apple') {
+                    drawApple(hCtx, scaledX, scaledY, scaledW, scaledH, el.flippedH);
+                } else if (el.type === 'birthday') {
+                    drawBirthday(hCtx, scaledX, scaledY, scaledW, scaledH, el.flippedH);
+                }
+            });
 
             const base64Image = hiresCanvas.toDataURL('image/png');
 
@@ -1400,6 +2327,17 @@
             const form = document.getElementById('customFrameForm');
             const formData = new FormData(form);
 
+            // Intercept layout type to pass backend validation
+            const layoutType = formData.get('layout_type');
+            if (layoutType === 'strip_3') {
+                formData.set('layout_type', 'strip');
+            } else if (layoutType === 'grid_6') {
+                formData.set('layout_type', 'grid');
+            }
+
+            // Sync the active slots JSON data
+            formData.set('slots', JSON.stringify(activeSlots));
+
             fetch("{{ route('frame.save') }}", {
                 method: "POST",
                 body: formData
@@ -1408,8 +2346,18 @@
             .then(data => {
                 if (data.success) {
                     showNotification(data.message);
-                    closeModal('customFrameModal');
+                    if (document.getElementById('customFrameModal')) {
+                        closeModal('customFrameModal');
+                    }
                     form.reset();
+                    
+                    // If in custom creator mode, redirect back to custom dashboard
+                    if (new URLSearchParams(window.location.search).get('action') === 'custom') {
+                        setTimeout(() => {
+                            window.location.href = "{{ route('studio.custom') }}";
+                        }, 1200);
+                        return;
+                    }
                     
                     // Add new frame option to left sidebar
                     const container = document.getElementById('frameContainer');
