@@ -797,6 +797,18 @@
         let canvasWidth = 400;
         let canvasHeight = 1200;
 
+        // Helper to resolve absolute vs relative URL paths for overlays
+        function resolveOverlayPath(path) {
+            if (!path || path === 'null') return '';
+            if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('//') || path.startsWith('data:')) {
+                return path;
+            }
+            if (path.startsWith('/')) {
+                return path;
+            }
+            return '/' + path;
+        }
+
         // Initialize App
         window.addEventListener('DOMContentLoaded', () => {
             canvas = document.getElementById('photoboxCanvas');
@@ -815,26 +827,6 @@
                 if (targetFrameBtn) {
                     targetFrameBtn.click();
                     frameSelected = true;
-                    
-                    // Activate Booth Mode (Hide sidebars, center canvas layout, show booth toolbar)
-                    document.getElementById('leftSidebar').style.display = 'none';
-                    document.getElementById('rightSidebar').style.display = 'none';
-                    
-                    const center = document.getElementById('centerSandbox');
-                    center.classList.remove('lg:col-span-6');
-                    center.classList.add('lg:col-span-8', 'lg:col-start-3');
-                    
-                    document.getElementById('boothToolbar').classList.remove('hidden');
-                    
-                    // Trigger the selected action immediately
-                    const action = urlParams.get('action');
-                    setTimeout(() => {
-                        if (action === 'capture') {
-                            chooseAmbilFoto();
-                        } else if (action === 'upload') {
-                            choosePilihFile();
-                        }
-                    }, 450);
                 }
             }
 
@@ -853,6 +845,28 @@
                 setTimeout(() => {
                     previewCustomLayout(urlLayout);
                 }, 500);
+            }
+
+            // Trigger the selected booth action immediately if action parameter is present
+            const action = urlParams.get('action');
+            if (action && action !== 'custom') {
+                // Activate Booth Mode (Hide sidebars, center canvas layout, show booth toolbar)
+                document.getElementById('leftSidebar').style.display = 'none';
+                document.getElementById('rightSidebar').style.display = 'none';
+                
+                const center = document.getElementById('centerSandbox');
+                center.classList.remove('lg:col-span-6');
+                center.classList.add('lg:col-span-8', 'lg:col-start-3');
+                
+                document.getElementById('boothToolbar').classList.remove('hidden');
+                
+                setTimeout(() => {
+                    if (action === 'capture') {
+                        chooseAmbilFoto();
+                    } else if (action === 'upload') {
+                        choosePilihFile();
+                    }
+                }, 600);
             }
 
             // Check for overlay_id parameter to automatically select overlay design
@@ -1023,7 +1037,7 @@
                     processOverlayImage(img);
                     drawCanvas();
                 };
-                img.src = '/' + overlayImage;
+                img.src = resolveOverlayPath(overlayImage);
             }
 
             // Highlighting selected button style
@@ -2808,7 +2822,7 @@
                     drawCanvas();
                     showNotification("Frame overlay applied!");
                 };
-                img.src = '/' + overlayPath;
+                img.src = resolveOverlayPath(overlayPath);
             } else {
                 drawCanvas();
                 showNotification("Background set to plain solid color");
